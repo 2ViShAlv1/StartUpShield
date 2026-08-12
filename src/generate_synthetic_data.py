@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import logging
 from pathlib import Path
 
@@ -12,6 +13,8 @@ import yaml
 
 
 CONFIG_PATH = Path("config/config.yaml")
+SAAS_CHURN_TRAIN_PATH = Path("train.csv")
+SAAS_CHURN_TEST_PATH = Path("test_.csv")
 
 
 def load_config(path: Path = CONFIG_PATH) -> dict:
@@ -78,6 +81,91 @@ def generate_churn_data(n_customers: int = 5000, seed: int = 42) -> pd.DataFrame
             "churn_label": churn_label,
         }
     )
+
+
+def _hash_identifier(value: str) -> str:
+    """Hash a customer identifier before storing it in project data.
+
+    Args:
+        value: Raw identifier from a source dataset.
+
+    Returns:
+        Stable SHA-256 hash string.
+    """
+    return hashlib.sha256(str(value).encode("utf-8")).hexdigest()
+
+
+def load_real_saas_churn_data(
+    train_path: Path = SAAS_CHURN_TRAIN_PATH,
+    test_path: Path = SAAS_CHURN_TEST_PATH,
+) -> pd.DataFrame | None:
+    """Load and anonymize the Kaggle SaaS churn dataset if files exist.
+
+    Args:
+        train_path: Path to the extracted training CSV.
+        test_path: Path to the extracted test CSV.
+
+    Returns:
+        Phase-compatible churn DataFrame, or None if source files are missing.
+    """
+    if not train_path.exists() or not test_path.exists():
+        return None
+
+    raw_df = pd.concat(
+        [pd.read_csv(train_path), pd.read_csv(test_path)],
+        ignore_index=True,
+    )
+    required_columns = {
+        "Customer_ID",
+        "Account_Age_Days",
+        "Login_Frequency",
+        "Daily_Usage_Mins",
+        "Last_Support_Ticket",
+        "Churn",
+    }
+    missing_columns = required_columns - set(raw_df.columns)
+    if missing_columns:
+        raise ValueError(f"SaaS churn files are missing columns: {missing_columns}")
+
+    login_frequency_map = {
+        "Daily": 30,
+        "Weekly": 4,
+        "Monthly": 1,
+        "Rarely": 0,
+    }
+    support_text = raw_df["Last_Support_Ticket"].astype(str).str.lower()
+    support_risk_terms = [
+        "support",
+        "bug",
+        "issue",
+        "confusing",
+        "cancel",
+        "waiting",
+        "problem",
+        "error",
+        "broken",
+    ]
+    risky_ticket = support_text.str.contains("|".join(support_risk_terms), regex=True)
+    usage_minutes = raw_df["Daily_Usage_Mins"].astype(float)
+
+    # The source is SaaS-like but does not include spend, ticket counts, or plan.
+    # These proxy columns preserve the master spec schema for later modules.
+    transformed_df = pd.DataFrame(
+        {
+            "customer_id": raw_df["Customer_ID"].map(_hash_identifier),
+            "tenure": np.maximum((raw_df["Account_Age_Days"] / 30).round().astype(int), 1),
+            "monthly_spend": np.clip(25 + usage_minutes * 0.85, 10, 200).round(2),
+            "usage_frequency": raw_df["Login_Frequency"].map(login_frequency_map).fillna(0).astype(int),
+            "support_tickets": np.where(risky_ticket, 1, 0),
+            "plan_type": pd.cut(
+                usage_minutes,
+                bins=[-1, 25, 80, np.inf],
+                labels=["basic", "pro", "enterprise"],
+            ).astype(str),
+            "churn_label": raw_df["Churn"].astype(int),
+        }
+    )
+    return transformed_df
 
 
 def generate_reviews_data(n_reviews: int = 3000, seed: int = 42) -> pd.DataFrame:
@@ -224,7 +312,13 @@ def write_phase1_datasets(output_dir: Path, seed: int = 42) -> None:
     """
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    churn_df = generate_churn_data(seed=seed)
+    real_churn_df = load_real_saas_churn_data()
+    if real_churn_df is not None:
+        churn_df = real_churn_df
+        logging.info("Using anonymized Kaggle SaaS churn data from train.csv and test_.csv")
+    else:
+        churn_df = generate_churn_data(seed=seed)
+        logging.warning("Using synthetic churn fallback because Kaggle SaaS files were not found")
     churn_df.to_csv(output_dir / "churn.csv", index=False)
     logging.info("Wrote %s", output_dir / "churn.csv")
 

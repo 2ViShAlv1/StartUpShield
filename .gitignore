@@ -3,6 +3,9 @@ __pycache__/
 *.pyc
 data/raw/*.csv
 data/processed/*.csv
+train.csv
+test_.csv
+archive*.zip
 models/*.pkl
 models/sentiment_model/
 .env
