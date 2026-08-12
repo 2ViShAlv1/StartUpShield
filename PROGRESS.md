@@ -3,7 +3,7 @@
 ## Master Checklist
 
 - [x] Phase 0 — Repo scaffolded, environment ready
-- [ ] Phase 1 — All 3 datasets loading cleanly
+- [x] Phase 1 — All 3 datasets loading cleanly
 - [ ] Phase 2 — `preprocessing.py` + EDA report done
 - [ ] Phase 3 — Churn model, ROC-AUC > 0.80
 - [ ] Phase 4 — Sentiment model, macro-F1 > 0.75
@@ -25,3 +25,10 @@
 - [x] Write starter `README.md`
 - [x] Create `PROGRESS.md`
 - [x] Create `DECISIONS.md`
+
+## Phase 1 — Project Setup & Data Foundation
+
+- [x] Attempt to download Kaggle Telco Churn dataset into `data/raw/churn.csv`
+- [x] Attempt to load a HuggingFace sentiment dataset and save to `data/raw/reviews.csv`
+- [x] Write `src/generate_synthetic_data.py` for fallback churn, fallback reviews, and time-series data
+- [x] Confirm all three load cleanly
