@@ -1,0 +1,1 @@
+"""Streamlit anomalies page."""

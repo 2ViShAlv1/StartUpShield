@@ -1,0 +1,21 @@
+seed: 42
+paths:
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  models: "models"
+churn:
+  model_type: "xgboost"
+  test_size: 0.2
+sentiment:
+  model_type: "tfidf_logreg"
+  max_features: 5000
+anomaly:
+  contamination: 0.03
+forecast:
+  model_type: "prophet"
+  horizon_days: 30
+risk_weights:
+  w_churn: 0.35
+  w_sentiment: 0.20
+  w_anomaly: 0.20
+  w_forecast: 0.25
