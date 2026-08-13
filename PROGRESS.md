@@ -4,8 +4,8 @@
 
 - [x] Phase 0 — Repo scaffolded, environment ready
 - [x] Phase 1 — All 3 datasets loading cleanly
-- [ ] Phase 2 — `preprocessing.py` + EDA report done
-- [ ] Phase 3 — Churn model, ROC-AUC > 0.80
+- [x] Phase 2 — `preprocessing.py` + EDA report done
+- [x] Phase 3 — Churn model, ROC-AUC > 0.80
 - [ ] Phase 4 — Sentiment model, macro-F1 > 0.75
 - [ ] Phase 5 — Anomaly detector validated against injected anomalies
 - [ ] Phase 6 — Forecast module beats naive baseline (or documented why not)
@@ -32,3 +32,23 @@
 - [x] Attempt to load a HuggingFace sentiment dataset and save to `data/raw/reviews.csv`
 - [x] Write `src/generate_synthetic_data.py` for fallback churn, fallback reviews, and time-series data
 - [x] Confirm all three load cleanly
+
+## Phase 2 — EDA & Preprocessing
+
+- [x] Explore churn, sentiment, and time-series datasets
+- [x] Check missing values, class balance, and basic distributions
+- [x] Build `src/preprocessing.py`
+- [x] Add preprocessing helper tests
+- [x] Write `reports/eda_findings.md`
+- [x] Populate Phase 2 EDA notebooks
+
+## Phase 3 — Churn Prediction Module
+
+- [x] Engineer churn features
+- [x] Train Logistic Regression baseline
+- [x] Train Random Forest stronger model
+- [x] Handle class imbalance with balanced class weights
+- [x] Evaluate ROC-AUC, PR-AUC, F1, and confusion matrix
+- [x] Save best model to `models/churn_model.pkl`
+- [x] Write `reports/model_evaluation_churn.md`
+- [x] Add churn module tests
