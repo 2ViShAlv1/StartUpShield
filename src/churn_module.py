@@ -8,8 +8,9 @@ from typing import Any
 import joblib
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     average_precision_score,
@@ -19,7 +20,6 @@ from sklearn.metrics import (
 )
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from pandas.api.types import is_numeric_dtype
 
 
 TARGET_COLUMN = "churn_label"
@@ -73,9 +73,9 @@ def train(
     Args:
         X_train: Engineered feature DataFrame.
         y_train: Binary churn labels.
-        model_type: `logistic_regression`, `random_forest`, or `xgboost`.
-            `xgboost` falls back to Random Forest when the optional package is
-            unavailable.
+        model_type: `logistic_regression`, `random_forest`, `xgboost`, or
+            `lightgbm`. Optional gradient-boosting dependencies fall back to
+            sklearn models when unavailable.
         seed: Random seed for reproducible training.
 
     Returns:
@@ -91,7 +91,7 @@ def train(
             random_state=seed,
         )
         resolved_model_type = "logistic_regression"
-    elif model_type in {"random_forest", "rf", "xgboost"}:
+    elif model_type in {"random_forest", "rf"}:
         estimator = RandomForestClassifier(
             n_estimators=300,
             max_depth=8,
@@ -100,14 +100,38 @@ def train(
             random_state=seed,
             n_jobs=-1,
         )
-        resolved_model_type = (
-            "random_forest_fallback_for_xgboost"
-            if model_type == "xgboost"
-            else "random_forest"
-        )
+        resolved_model_type = "random_forest"
+    elif model_type == "xgboost":
+        estimator = _build_xgboost_classifier(y_train, seed)
+        if estimator is None:
+            estimator = RandomForestClassifier(
+                n_estimators=300,
+                max_depth=8,
+                min_samples_leaf=5,
+                class_weight="balanced",
+                random_state=seed,
+                n_jobs=-1,
+            )
+            resolved_model_type = "random_forest_fallback_for_xgboost"
+        else:
+            resolved_model_type = "xgboost"
+    elif model_type in {"lightgbm", "lgbm"}:
+        estimator = _build_lightgbm_classifier(seed)
+        if estimator is None:
+            estimator = HistGradientBoostingClassifier(
+                max_iter=180,
+                learning_rate=0.04,
+                max_leaf_nodes=15,
+                l2_regularization=0.1,
+                random_state=seed,
+            )
+            resolved_model_type = "hist_gradient_boosting_fallback_for_lightgbm"
+        else:
+            resolved_model_type = "lightgbm"
     else:
         raise ValueError(
-            "model_type must be one of: logistic_regression, random_forest, xgboost"
+            "model_type must be one of: logistic_regression, random_forest, "
+            "xgboost, lightgbm"
         )
 
     model = Pipeline(
@@ -197,6 +221,18 @@ def train_candidate_models(
             model_type="random_forest",
             seed=seed,
         ),
+        "xgboost": train(
+            X_train,
+            y_train,
+            model_type="xgboost",
+            seed=seed,
+        ),
+        "lightgbm": train(
+            X_train,
+            y_train,
+            model_type="lightgbm",
+            seed=seed,
+        ),
     }
 
 
@@ -227,4 +263,52 @@ def _build_preprocessor(X: pd.DataFrame) -> ColumnTransformer:
             ("numeric", StandardScaler(), numeric_columns),
             ("categorical", OneHotEncoder(handle_unknown="ignore"), categorical_columns),
         ]
+    )
+
+
+def _build_xgboost_classifier(
+    y_train: pd.Series | np.ndarray,
+    seed: int,
+) -> Any | None:
+    """Build an XGBoost classifier when the optional dependency is installed."""
+    try:
+        from xgboost import XGBClassifier
+    except ImportError:
+        return None
+
+    labels = pd.Series(y_train)
+    negative_count = max(int((labels == 0).sum()), 1)
+    positive_count = max(int((labels == 1).sum()), 1)
+    return XGBClassifier(
+        n_estimators=250,
+        max_depth=3,
+        learning_rate=0.05,
+        subsample=0.9,
+        colsample_bytree=0.9,
+        objective="binary:logistic",
+        eval_metric="logloss",
+        scale_pos_weight=negative_count / positive_count,
+        random_state=seed,
+        n_jobs=-1,
+    )
+
+
+def _build_lightgbm_classifier(seed: int) -> Any | None:
+    """Build the best Phase 3 LightGBM classifier when installed."""
+    try:
+        from lightgbm import LGBMClassifier
+    except ImportError:
+        return None
+
+    return LGBMClassifier(
+        n_estimators=150,
+        learning_rate=0.03,
+        num_leaves=7,
+        min_child_samples=40,
+        subsample=0.85,
+        colsample_bytree=0.85,
+        reg_lambda=3,
+        class_weight="balanced",
+        random_state=seed,
+        verbose=-1,
     )

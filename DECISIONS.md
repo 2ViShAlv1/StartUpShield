@@ -11,3 +11,8 @@ This file records implementation decisions, fallbacks, and deviations from the m
 
 - User provided the Kaggle SaaS Customer Churn Prediction dataset as `train.csv` and `test_.csv`.
 - Replaced synthetic `data/raw/churn.csv` with an anonymized, Phase-compatible version of the real SaaS churn data. Dropped `Name` and `Email`, hashed `Customer_ID`, and created proxy columns for `monthly_spend`, `support_tickets`, and `plan_type` because the source dataset does not include those fields directly.
+
+## Phase 4 — Sentiment Model Scope
+
+- Shipped the TF-IDF + Logistic Regression baseline as the MVP sentiment model.
+- Skipped DistilBERT fine-tuning for this phase because the TF-IDF baseline exceeded the required macro-F1 threshold and provides very fast CPU inference.

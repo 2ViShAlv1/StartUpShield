@@ -82,6 +82,40 @@ def test_evaluate_returns_expected_metrics() -> None:
     assert len(metrics["confusion_matrix"]) == 2
 
 
+def test_xgboost_model_type_trains_or_falls_back() -> None:
+    """XGBoost should train when installed and fall back cleanly otherwise."""
+    df = _sample_churn_df()
+    X = engineer_features(df)
+    y = df["churn_label"]
+
+    model = train(X, y, model_type="xgboost")
+    probabilities = predict(model, X)
+
+    assert getattr(model, "resolved_model_type_") in {
+        "xgboost",
+        "random_forest_fallback_for_xgboost",
+    }
+    assert np.all(probabilities >= 0)
+    assert np.all(probabilities <= 1)
+
+
+def test_lightgbm_model_type_trains_or_falls_back() -> None:
+    """LightGBM should train when installed and fall back cleanly otherwise."""
+    df = _sample_churn_df()
+    X = engineer_features(df)
+    y = df["churn_label"]
+
+    model = train(X, y, model_type="lightgbm")
+    probabilities = predict(model, X)
+
+    assert getattr(model, "resolved_model_type_") in {
+        "lightgbm",
+        "hist_gradient_boosting_fallback_for_lightgbm",
+    }
+    assert np.all(probabilities >= 0)
+    assert np.all(probabilities <= 1)
+
+
 def test_save_and_load_model_preserves_predictions(tmp_path) -> None:
     """Saved and loaded models should produce identical probabilities."""
     df = _sample_churn_df()

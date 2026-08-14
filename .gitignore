@@ -1,4 +1,5 @@
 venv/
+.venv/
 __pycache__/
 *.pyc
 data/raw/*.csv
@@ -13,3 +14,4 @@ models/sentiment_model/
 *.log
 .pytest_cache/
 .ipynb_checkpoints/
+*.mkv
