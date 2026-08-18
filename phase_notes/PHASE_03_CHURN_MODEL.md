@@ -62,6 +62,21 @@
 | HistGradientBoosting | 0.8513 | 0.7777 | 0.7819 |
 | LightGBM | 0.8535 | 0.7879 | 0.7806 |
 
+## ⚠️ Proxy-Feature Warning
+
+Three of the five base features are derived, and two come from the same source column:
+
+| Column | Derived from | Independent? |
+| --- | --- | --- |
+| `monthly_spend` | `25 + Daily_Usage_Mins * 0.85` | No |
+| `plan_type` | `pd.cut(Daily_Usage_Mins, ...)` | No — same variable, binned |
+| `support_tickets` | keyword flag over last-ticket text (incl. `"cancel"`) | Partly — closer to stated intent |
+
+So the 0.8535 ROC-AUC honestly means: *the model separates high-usage from low-usage accounts
+well.* That is a real churn signal, but it is fewer independent signals than five features
+suggest. Never present `monthly_spend` as a pricing insight or `plan_type` as a tier effect.
+Phase 7 SHAP output must label these using `churn_module.PROXY_FEATURE_COLUMNS`.
+
 ## Dependency Notes
 
 - `xgboost` is installed in `.venv` for this project.
@@ -69,6 +84,8 @@
 - `imbalanced-learn` is also not installed, so SMOTE was not used.
 - LightGBM has the highest ROC-AUC and is saved as the current best model.
 - Random Forest and XGBoost are saved separately for comparison/future use.
+- `config/config.yaml` now sets `churn.model_type: lightgbm` to match (it said `xgboost` before).
+- Rebuild every artifact and metric with `python -m src.train_all --module churn`.
 
 ## What You Should Study
 

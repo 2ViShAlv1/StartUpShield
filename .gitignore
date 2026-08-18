@@ -9,6 +9,7 @@ test_.csv
 archive*.zip
 models/*.pkl
 models/sentiment_model/
+reports/train_summary.json
 .env
 .streamlit/secrets.toml
 *.log

@@ -150,6 +150,13 @@ def load_real_saas_churn_data(
 
     # The source is SaaS-like but does not include spend, ticket counts, or plan.
     # These proxy columns preserve the master spec schema for later modules.
+    #
+    # WARNING: monthly_spend and plan_type are BOTH deterministic functions of
+    # usage_minutes, so they are not independent predictors -- they restate daily
+    # usage. support_tickets flags churn-intent words (including "cancel") in the
+    # last ticket text, so it leans closer to stated intent than to behaviour.
+    # See churn_module.PROXY_FEATURE_COLUMNS and DECISIONS.md before reading any
+    # feature-importance or SHAP output built on these columns.
     transformed_df = pd.DataFrame(
         {
             "customer_id": raw_df["Customer_ID"].map(_hash_identifier),

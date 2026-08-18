@@ -4,7 +4,8 @@ paths:
   processed_data: "data/processed"
   models: "models"
 churn:
-  model_type: "xgboost"
+  # Phase 3 candidate comparison selected LightGBM (highest ROC-AUC and PR-AUC).
+  model_type: "lightgbm"
   test_size: 0.2
 sentiment:
   model_type: "tfidf_logreg"

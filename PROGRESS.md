@@ -7,13 +7,24 @@
 - [x] Phase 2 — `preprocessing.py` + EDA report done
 - [x] Phase 3 — Churn model, ROC-AUC > 0.80
 - [x] Phase 4 — Sentiment model, macro-F1 > 0.75
-- [ ] Phase 5 — Anomaly detector validated against injected anomalies
+- [x] Phase 5 — Anomaly detector validated against injected anomalies
 - [ ] Phase 6 — Forecast module beats naive baseline (or documented why not)
 - [ ] Phase 7 — `risk_aggregator.py` with SHAP explanations working
 - [ ] Phase 8 — `recommendation_engine.py` tested on 3-4 scenarios
 - [ ] Phase 9 — Full 6-page Streamlit dashboard live
 - [ ] Phase 10 — End-to-end demo script passes for all 3 demo companies, README complete
 - [ ] Phase 11 (optional) — FastAPI + Docker + CI
+
+## Cross-Phase Hardening (post Phase-5 review)
+
+- [x] Add `src/train_all.py` so every model is reproducible from a fresh clone
+- [x] Fix row-order bug in `anomaly_module.build_features` with duplicate indices
+- [x] Document churn proxy features in code, `DECISIONS.md`, and the churn report
+- [x] Correct the anomaly report to match the model's actual feature set
+- [x] Reconcile `config/config.yaml` churn model with the selected LightGBM model
+- [x] Split `requirements.txt` into core + optional
+- [x] Add `pyproject.toml` with explicit pytest `pythonpath`
+- [x] Execute the EDA notebooks so committed copies carry outputs
 
 ## Phase 0 — Agent Bootstrap & Environment
 
@@ -63,3 +74,12 @@
 - [x] Save chosen model to `models/sentiment_model/`
 - [x] Write `reports/model_evaluation_sentiment.md`
 - [x] Add sentiment module tests
+
+## Phase 5 — Anomaly Detection Module
+
+- [x] Build time-series rolling and daily-change features
+- [x] Train IsolationForest anomaly detector
+- [x] Validate against injected anomaly labels
+- [x] Save model to `models/anomaly_model.pkl`
+- [x] Write `reports/anomaly_validation.md`
+- [x] Add anomaly module tests

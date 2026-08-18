@@ -17,10 +17,37 @@
 Base features:
 
 - `tenure`
-- `monthly_spend`
+- `monthly_spend` — ⚠️ proxy
 - `usage_frequency`
-- `support_tickets`
-- `plan_type`
+- `support_tickets` — ⚠️ proxy
+- `plan_type` — ⚠️ proxy
+
+### ⚠️ Proxy-feature warning (read before interpreting importances)
+
+The real SaaS source dataset has no spend, ticket-count, or plan fields. Three of the five
+base columns are therefore derived in `load_real_saas_churn_data()`, and two of them come
+from the **same** underlying variable:
+
+| Column | Actually derived from | Independent signal? |
+| --- | --- | --- |
+| `monthly_spend` | `25 + Daily_Usage_Mins * 0.85` | No — a linear restatement of daily usage |
+| `plan_type` | `pd.cut(Daily_Usage_Mins, [-1, 25, 80, inf])` | No — the same variable, binned |
+| `support_tickets` | keyword flag over last-ticket text (incl. `"cancel"`) | Partly — leans toward stated churn intent |
+
+Consequences for reporting:
+
+- `monthly_spend` correlates −0.50 with churn, but that is daily usage minutes wearing a
+  costume. **Do not present it as a pricing or revenue insight.**
+- `plan_type` churn rates (basic 64.9%, pro 15.5%, enterprise 6.6%) are the usage-minutes
+  split restated, not a tier effect.
+- `support_tickets` matches churn-intent words, so it sits closer to stated intent than to
+  behaviour. Treat it as a near-term intent signal, not a support-load signal.
+- **Phase 7 action:** SHAP plots built on these columns will tell a false causal story unless
+  they are labelled as usage proxies. The constant `churn_module.PROXY_FEATURE_COLUMNS` exists
+  so the explainability layer can label them automatically.
+
+The schema is kept as-is because the master build spec (§ dataset table) mandates these column
+names for downstream modules. The fix is honest labelling, not schema surgery.
 
 Engineered features:
 
@@ -108,3 +135,10 @@ The strongest improvement came from a regularized LightGBM model. A compact Ligh
 - `lightgbm` has been installed in the project `.venv` and evaluated for Phase 3.
 - `imbalanced-learn` is not installed, so SMOTE was not used.
 - The current primary model is LightGBM, with Random Forest and XGBoost retained as comparison artifacts.
+- `config/config.yaml` now sets `churn.model_type: lightgbm` to match the selected model
+  (it previously said `xgboost`, contradicting this report).
+- Reproduce every number above with `python -m src.train_all --module churn`. The metrics in
+  the candidate table were regenerated from that entrypoint and match exactly.
+- Because three base features are usage-minutes proxies, the honest read of the 0.8535 ROC-AUC
+  is that the model separates high-usage from low-usage accounts well. That is a genuine and
+  useful churn signal, but it is fewer independent signals than the five-feature table implies.

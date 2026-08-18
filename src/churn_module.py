@@ -32,6 +32,17 @@ BASE_FEATURE_COLUMNS = [
 ]
 MODEL_PATH = Path("models/churn_model.pkl")
 
+# The real SaaS source dataset has no spend or plan fields, so
+# generate_synthetic_data.load_real_saas_churn_data() derives these two columns
+# deterministically from Daily_Usage_Mins (see DECISIONS.md). They are NOT
+# independent business signals: any feature-importance or SHAP output must
+# report them as usage-minutes proxies, never as pricing or tier effects.
+PROXY_FEATURE_COLUMNS = {
+    "monthly_spend": "linear transform of Daily_Usage_Mins",
+    "plan_type": "binned Daily_Usage_Mins",
+    "support_tickets": "keyword flag over last-support-ticket text",
+}
+
 
 def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     """Create churn modeling features from the Phase 1 churn schema.
@@ -41,6 +52,11 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
 
     Returns:
         Feature DataFrame ready for preprocessing/modeling.
+
+    Note:
+        When the frame comes from the real SaaS source, the columns listed in
+        `PROXY_FEATURE_COLUMNS` are derived from a single underlying variable
+        and must be interpreted accordingly downstream.
     """
     missing_columns = [column for column in BASE_FEATURE_COLUMNS if column not in df.columns]
     if missing_columns:
