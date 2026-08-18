@@ -2,10 +2,6 @@
 # NOT required to run Phases 0-5 or the test suite. Install with:
 #   pip install -r requirements-optional.txt
 
-# Phase 6 — forecasting
-prophet>=1.1
-statsmodels>=0.14
-
 # Phase 7 — SHAP explanations
 shap>=0.44
 
@@ -24,6 +20,7 @@ datasets>=2.14
 
 # Skipped alternatives, kept for reference.
 # DistilBERT fine-tuning was evaluated and skipped (DECISIONS.md "Phase 4").
+# The Phase 6 LSTM stretch goal was skipped (DECISIONS.md "Phase 6").
 # SMOTE was not used; balanced class weights handle the imbalance instead.
 transformers>=4.35
 torch>=2.1

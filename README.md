@@ -4,6 +4,9 @@ StartupShield AI is an MVP risk-monitoring dashboard for startups and SaaS compa
 
 It combines churn prediction, sentiment analysis, anomaly detection, forecasting, SHAP explanations, and rule-based recommendations into a single 0-100 company risk score.
 
+**Built so far:** churn (Phase 3), sentiment (Phase 4), anomaly detection (Phase 5), forecasting (Phase 6).
+Risk aggregation + SHAP, recommendations, and the dashboard are Phases 7-9.
+
 ## Setup
 
 ```bash
@@ -42,13 +45,16 @@ pytest
 
 ## Reading the reports honestly
 
-Two published numbers need context — both are documented in `DECISIONS.md`:
+Three published numbers need context — both are documented in `DECISIONS.md`:
 
 - **Churn:** three of five base features (`monthly_spend`, `plan_type`, `support_tickets`) are
   proxies derived from the source dataset; two are the same variable. See the proxy-feature
   warning in `reports/model_evaluation_churn.md` before quoting feature importances.
 - **Sentiment macro-F1 = 1.0000:** an artifact of template-generated review text, not proof of
   real-world generalization.
+- **Forecast beats the naive baseline by 5-13 pp:** most of that gain is simply capturing weekly
+  seasonality — a zero-modelling "repeat last week" backend already gets most of the way there.
+  See the seasonal-naive row in `reports/model_comparison_forecast.md`.
 
 ## Status
 

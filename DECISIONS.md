@@ -30,5 +30,37 @@ This file records implementation decisions, fallbacks, and deviations from the m
 
 - Added `src/train_all.py` as the single training entrypoint. Previously the pickles in `models/` were trained ad hoc and could not be regenerated from committed code, while `.gitignore` excludes both `data/raw/*.csv` and `models/*.pkl` — so a fresh clone had neither data nor models nor a way to rebuild them.
 - `src/train_all.py` reproduces every metric published in `reports/` exactly.
-- Split `requirements.txt` (core, actually imported) from `requirements-optional.txt` (later phases and skipped alternatives such as `torch`, `transformers`, `prophet`, `fastapi`). The original single file listed 21 mostly-uninstalled packages.
+- Split `requirements.txt` (core, actually imported) from `requirements-optional.txt` (later phases and skipped alternatives such as `torch`, `transformers`, `shap`, `fastapi`). The original single file listed 21 mostly-uninstalled packages.
 - Added `pyproject.toml` with `pythonpath = ["."]` so `from src...` imports in tests resolve explicitly instead of depending on pytest's implicit rootdir insertion.
+
+## Phase 6 — Forecasting Model Choice
+
+- `prophet` 1.4.0 and `statsmodels` 0.14.6 both installed successfully in `.venv`, so no
+  install-failure fallback was needed. Both were evaluated and both are shipped: Prophet is the
+  configured default, ETS is a real tested fallback rather than dead code.
+- Added a third dependency-free `seasonal_naive` backend so the module still satisfies the FR4
+  confidence-bound contract even if neither library is available.
+- **LSTM (PyTorch) skipped.** The spec marks it a stretch goal and "the first thing to drop".
+  With 335 training points per company and the definition of done already met by a 0.18 s
+  statistical fit, an LSTM would add `torch` as a heavyweight dependency for no demonstrable
+  gain. Recorded here rather than silently omitted.
+- **ETS slightly beat Prophet** on mean MAPE (4.48% vs 4.59%, winning 2 of 3 companies) with
+  better interval coverage. Prophet is kept as the default anyway: the gap is within noise on
+  three series, and Prophet's native uncertainty interval is better principled than the ETS
+  residual approximation. This is documented rather than hidden because it affects which
+  backend a future maintainer should reach for.
+- **Prophet's 95% interval was under-covered on GreenLeaf SaaS** (0.80 actual coverage). Do not
+  present those bounds as calibrated without this caveat.
+- One model is fitted per company, not one global model, because the three series have
+  different scales, growth rates, and trend directions.
+- Prophet models are persisted via `prophet.serialize` JSON, not raw pickle, which does not
+  transfer reliably across environments. `save_model`/`load_model` handle this transparently.
+
+## Phase 6 — What the Forecast Numbers Actually Mean
+
+- The `seasonal_naive` backend (repeat last week, zero modelling) reaches 5.19% mean MAPE
+  versus the required naive baseline's 13.05%. Prophet and ETS only improve on that by a
+  further ~0.6-0.7 pp.
+- So beating the naive baseline by 5-13 percentage points is **mostly the value of capturing
+  weekly seasonality**, not evidence that Prophet is doing something sophisticated. Quote it
+  that way; the seasonal-naive column in the report exists precisely to keep this honest.

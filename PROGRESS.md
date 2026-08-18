@@ -8,7 +8,7 @@
 - [x] Phase 3 — Churn model, ROC-AUC > 0.80
 - [x] Phase 4 — Sentiment model, macro-F1 > 0.75
 - [x] Phase 5 — Anomaly detector validated against injected anomalies
-- [ ] Phase 6 — Forecast module beats naive baseline (or documented why not)
+- [x] Phase 6 — Forecast module beats naive baseline (or documented why not)
 - [ ] Phase 7 — `risk_aggregator.py` with SHAP explanations working
 - [ ] Phase 8 — `recommendation_engine.py` tested on 3-4 scenarios
 - [ ] Phase 9 — Full 6-page Streamlit dashboard live
@@ -83,3 +83,17 @@
 - [x] Save model to `models/anomaly_model.pkl`
 - [x] Write `reports/anomaly_validation.md`
 - [x] Add anomaly module tests
+
+## Phase 6 — Forecasting Module
+
+- [x] Chronological train-test split (last 30 days held out, never shuffled)
+- [x] Prophet baseline with native 95% confidence bounds
+- [x] statsmodels Holt-Winters (ETS) fallback
+- [x] Dependency-free seasonal-naive last-resort backend
+- [x] Evaluate MAE, RMSE, MAPE against last-value-carried-forward naive baseline
+- [x] Confidence bounds returned for every future date (FR4)
+- [x] Save/load per-company models to `models/forecast_model_<company>.pkl`
+- [x] Write `reports/model_comparison_forecast.md` with actual-vs-predicted plots
+- [x] Add forecast module tests
+- [x] Wire forecast into `src/train_all.py`
+- [ ] LSTM (PyTorch) — stretch goal, deliberately skipped (see DECISIONS.md)

@@ -15,12 +15,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from src import anomaly_module, churn_module, sentiment_module
+from src import anomaly_module, churn_module, forecast_module, sentiment_module
 from src.generate_synthetic_data import CONFIG_PATH, load_config
 from src.preprocessing import train_test_split_stratified
 
 
-MODULES = ("churn", "sentiment", "anomaly")
+MODULES = ("churn", "sentiment", "anomaly", "forecast")
 
 
 def train_churn(config: dict, raw_dir: Path, models_dir: Path) -> dict:
@@ -115,12 +115,57 @@ def train_anomaly(config: dict, raw_dir: Path, models_dir: Path) -> dict:
     }
 
 
+def train_forecast(config: dict, raw_dir: Path, models_dir: Path) -> dict:
+    """Fit one forecaster per company and score it against the naive baseline."""
+    timeseries_paths = sorted(raw_dir.glob("timeseries_*.csv"))
+    if not timeseries_paths:
+        raise FileNotFoundError(f"No timeseries_*.csv files found in {raw_dir}")
+
+    horizon_days = config["forecast"]["horizon_days"]
+    model_type = config["forecast"]["model_type"]
+
+    per_company = {}
+    for path in timeseries_paths:
+        company_df = pd.read_csv(path)
+        company_name = str(company_df["company_name"].iloc[0])
+
+        train_df, test_df = forecast_module.chronological_split(
+            company_df,
+            test_days=horizon_days,
+        )
+        model = forecast_module.train(
+            train_df,
+            model_type=model_type,
+            horizon_days=horizon_days,
+            seed=config["seed"],
+        )
+        per_company[company_name] = forecast_module.evaluate(model, test_df)
+        forecast_module.save_model(
+            model,
+            models_dir / f"forecast_model_{_slugify(company_name)}.pkl",
+        )
+
+    beats = [m["vs_naive_baseline"]["beats_naive"] for m in per_company.values()]
+    return {
+        "best_model": per_company[next(iter(per_company))]["model_type"],
+        "rows": sum(1 for _ in timeseries_paths),
+        "metrics": per_company,
+        "companies_beating_naive": f"{sum(beats)}/{len(beats)}",
+    }
+
+
+def _slugify(name: str) -> str:
+    """Turn a company name into a filename-safe slug."""
+    return "_".join(name.lower().split())
+
+
 def run(modules: tuple[str, ...], config: dict, raw_dir: Path, models_dir: Path) -> dict:
     """Train the requested modules and return their metric summaries."""
     trainers = {
         "churn": train_churn,
         "sentiment": train_sentiment,
         "anomaly": train_anomaly,
+        "forecast": train_forecast,
     }
 
     summary = {}
