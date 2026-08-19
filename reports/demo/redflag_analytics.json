@@ -1,0 +1,67 @@
+{
+  "company_name": "RedFlag Analytics",
+  "profile": "At Risk",
+  "risk_score": 57.43,
+  "risk_label": "Medium",
+  "signals": {
+    "churn_prob": 0.9051,
+    "sentiment_positivity": 0.2613,
+    "anomaly_flag_ratio": 0.0333,
+    "forecast_deviation": 0.0173
+  },
+  "contributions": {
+    "Churn": 31.68,
+    "Sentiment": 14.77,
+    "Anomalies": 6.67,
+    "Forecast": 4.31
+  },
+  "top_factors": [
+    {
+      "feature": "numeric__monthly_spend",
+      "shap_value": 2.0116
+    },
+    {
+      "feature": "numeric__spend_per_login",
+      "shap_value": 0.2783
+    },
+    {
+      "feature": "categorical__plan_type_basic",
+      "shap_value": 0.1451
+    }
+  ],
+  "explanation_text": "Risk driven primarily by monthly spend and spend per login; customer sentiment is mostly negative; 1 anomalous day detected in the last 30 days; revenue is trending in line with forecast.",
+  "recommendations": [
+    {
+      "action": "Prioritize retention outreach for the at-risk segment and review recent negative feedback themes.",
+      "reason": "High churn risk (91%) combined with negative customer sentiment (26% positivity).",
+      "priority": "critical"
+    },
+    {
+      "action": "Triage recent negative reviews and publish a response plan for the most common complaint themes.",
+      "reason": "Average review positivity is only 26%.",
+      "priority": "high"
+    },
+    {
+      "action": "Investigate the payment and billing pipeline for failed charges.",
+      "reason": "Revenue showed an unusual drop on recently flagged days.",
+      "priority": "high"
+    },
+    {
+      "action": "Check for a product outage or a recent breaking release.",
+      "reason": "Active users dropped sharply on recently flagged days.",
+      "priority": "high"
+    },
+    {
+      "action": "Review the signup funnel and any recent marketing or pricing changes.",
+      "reason": "Signups dropped sharply on recently flagged days.",
+      "priority": "high"
+    }
+  ],
+  "data_counts": {
+    "customers": 190,
+    "reviews": 170,
+    "daily_metrics": 365,
+    "forecast_rows": 60
+  },
+  "scoring_seconds": 0.178
+}

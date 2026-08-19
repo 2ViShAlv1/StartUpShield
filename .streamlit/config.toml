@@ -1,0 +1,14 @@
+[theme]
+primaryColor = "#1f4e79"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f0f3f7"
+textColor = "#1a1a1a"
+
+[server]
+# Uploads are small CSVs; cap the size so a stray large file cannot exhaust memory
+# on a shared host.
+maxUploadSize = 25
+enableXsrfProtection = true
+
+[browser]
+gatherUsageStats = false

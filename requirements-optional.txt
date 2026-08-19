@@ -1,9 +1,6 @@
 # Optional dependencies for later phases and skipped alternatives.
-# NOT required to run Phases 0-5 or the test suite. Install with:
+# NOT required to run the pipeline, dashboard, or test suite. Install with:
 #   pip install -r requirements-optional.txt
-
-# Phase 7 — SHAP explanations
-shap>=0.44
 
 # Phase 9 — richer dashboard charts
 plotly>=5.17

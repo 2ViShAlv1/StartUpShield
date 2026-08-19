@@ -1,0 +1,4 @@
+customer_id,tenure,monthly_spend,usage_frequency,support_tickets,plan_type
+CUST-001,12,89.5,22,0,pro
+CUST-002,3,45.0,4,2,basic
+CUST-003,24,120.0,28,0,enterprise

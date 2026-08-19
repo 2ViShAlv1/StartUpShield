@@ -2,7 +2,10 @@ venv/
 .venv/
 __pycache__/
 *.pyc
-data/raw/*.csv
+# data/raw/*.csv is intentionally NOT ignored: the demo CSVs are small, plain
+# text, and version-proof, so they ship with the repo as the reproducible seed a
+# fresh deploy trains from. Models stay ignored -- pickles are fragile across
+# library versions, so they are rebuilt in the deployment environment instead.
 data/processed/*.csv
 train.csv
 test_.csv

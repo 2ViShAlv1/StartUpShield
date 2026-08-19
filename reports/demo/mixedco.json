@@ -1,0 +1,47 @@
+{
+  "company_name": "MixedCo",
+  "profile": "Mixed",
+  "risk_score": 25.34,
+  "risk_label": "Low",
+  "signals": {
+    "churn_prob": 0.4387,
+    "sentiment_positivity": 0.5007,
+    "anomaly_flag_ratio": 0.0,
+    "forecast_deviation": 0.0
+  },
+  "contributions": {
+    "Churn": 15.36,
+    "Sentiment": 9.99,
+    "Anomalies": 0.0,
+    "Forecast": 0.0
+  },
+  "top_factors": [
+    {
+      "feature": "numeric__monthly_spend",
+      "shap_value": 0.0227
+    },
+    {
+      "feature": "numeric__usage_per_tenure",
+      "shap_value": -0.0226
+    },
+    {
+      "feature": "numeric__spend_per_login",
+      "shap_value": -0.0144
+    }
+  ],
+  "explanation_text": "Risk driven primarily by monthly spend and usage per tenure; customer sentiment is flat; revenue is trending in line with forecast.",
+  "recommendations": [
+    {
+      "action": "Schedule check-in calls with low-usage accounts before they lapse.",
+      "reason": "Churn probability is elevated at 44%.",
+      "priority": "medium"
+    }
+  ],
+  "data_counts": {
+    "customers": 200,
+    "reviews": 160,
+    "daily_metrics": 365,
+    "forecast_rows": 60
+  },
+  "scoring_seconds": 0.168
+}

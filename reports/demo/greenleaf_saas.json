@@ -1,0 +1,47 @@
+{
+  "company_name": "GreenLeaf SaaS",
+  "profile": "Healthy",
+  "risk_score": 18.77,
+  "risk_label": "Low",
+  "signals": {
+    "churn_prob": 0.2255,
+    "sentiment_positivity": 0.7894,
+    "anomaly_flag_ratio": 0.0333,
+    "forecast_deviation": 0.0
+  },
+  "contributions": {
+    "Churn": 7.89,
+    "Sentiment": 4.21,
+    "Anomalies": 6.67,
+    "Forecast": 0.0
+  },
+  "top_factors": [
+    {
+      "feature": "numeric__monthly_spend",
+      "shap_value": -0.9625
+    },
+    {
+      "feature": "numeric__spend_per_login",
+      "shap_value": -0.0686
+    },
+    {
+      "feature": "numeric__usage_frequency",
+      "shap_value": -0.0496
+    }
+  ],
+  "explanation_text": "Risk driven primarily by monthly spend and spend per login; customer sentiment is healthy; 1 anomalous day detected in the last 30 days; revenue is trending in line with forecast.",
+  "recommendations": [
+    {
+      "action": "Review flagged anomalous days against your release and campaign calendar.",
+      "reason": "3% of the last 30 days were flagged as anomalous.",
+      "priority": "medium"
+    }
+  ],
+  "data_counts": {
+    "customers": 220,
+    "reviews": 180,
+    "daily_metrics": 365,
+    "forecast_rows": 60
+  },
+  "scoring_seconds": 0.552
+}

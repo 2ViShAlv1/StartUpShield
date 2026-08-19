@@ -346,29 +346,41 @@ def _seasonal_naive_residual_std(values: np.ndarray) -> float:
 
 
 def _build_prophet(train_df: pd.DataFrame, target_column: str):
-    """Fit Prophet when installed; return (model, residual_std) or None."""
+    """Fit Prophet when available; return (model, residual_std) or None.
+
+    Catches every exception, not just ImportError. Prophet fits through cmdstanpy,
+    which compiles and shells out to a Stan binary -- on hosted environments that
+    binary can be missing, unwritable, or killed by a memory limit, all of which
+    raise at fit time rather than import time. Returning None lets `train()` fall
+    through to the ETS backend, which needs no compiled dependency; a hard failure
+    here would take the whole dashboard down instead.
+    """
     try:
         from prophet import Prophet
     except ImportError:
         return None
 
-    prophet_df = pd.DataFrame(
-        {
-            "ds": train_df[DATE_COLUMN],
-            "y": train_df[target_column].astype(float),
-        }
-    )
-    model = Prophet(
-        yearly_seasonality=False,
-        weekly_seasonality=True,
-        daily_seasonality=False,
-        interval_width=0.95,
-    )
-    model.fit(prophet_df)
+    try:
+        prophet_df = pd.DataFrame(
+            {
+                "ds": train_df[DATE_COLUMN],
+                "y": train_df[target_column].astype(float),
+            }
+        )
+        model = Prophet(
+            yearly_seasonality=False,
+            weekly_seasonality=True,
+            daily_seasonality=False,
+            interval_width=0.95,
+        )
+        model.fit(prophet_df)
 
-    fitted = model.predict(prophet_df[["ds"]])["yhat"].to_numpy(dtype=float)
-    residual_std = float(np.std(prophet_df["y"].to_numpy(dtype=float) - fitted))
-    return model, residual_std
+        fitted = model.predict(prophet_df[["ds"]])["yhat"].to_numpy(dtype=float)
+        residual_std = float(np.std(prophet_df["y"].to_numpy(dtype=float) - fitted))
+        return model, residual_std
+    except Exception:
+        logger.warning("Prophet fit failed; falling back to ETS", exc_info=True)
+        return None
 
 
 def _build_ets(train_df: pd.DataFrame, target_column: str):
@@ -378,19 +390,25 @@ def _build_ets(train_df: pd.DataFrame, target_column: str):
     except ImportError:
         return None
 
-    values = train_df[target_column].astype(float).to_numpy()
-    # Additive seasonality needs at least two full weekly cycles.
-    use_seasonal = len(values) >= 2 * SEASONAL_PERIOD_DAYS
-    fitted_model = ExponentialSmoothing(
-        values,
-        trend="add",
-        seasonal="add" if use_seasonal else None,
-        seasonal_periods=SEASONAL_PERIOD_DAYS if use_seasonal else None,
-        initialization_method="estimated",
-    ).fit(optimized=True)
+    try:
+        values = train_df[target_column].astype(float).to_numpy()
+        # Additive seasonality needs at least two full weekly cycles.
+        use_seasonal = len(values) >= 2 * SEASONAL_PERIOD_DAYS
+        fitted_model = ExponentialSmoothing(
+            values,
+            trend="add",
+            seasonal="add" if use_seasonal else None,
+            seasonal_periods=SEASONAL_PERIOD_DAYS if use_seasonal else None,
+            initialization_method="estimated",
+        ).fit(optimized=True)
 
-    residual_std = float(np.std(values - fitted_model.fittedvalues))
-    return fitted_model, residual_std
+        residual_std = float(np.std(values - fitted_model.fittedvalues))
+        return fitted_model, residual_std
+    except Exception:
+        # Optimiser can fail to converge on pathological series (all-constant,
+        # extreme outliers). Seasonal-naive always works, so degrade to it.
+        logger.warning("ETS fit failed; falling back to seasonal naive", exc_info=True)
+        return None
 
 
 def _predict_prophet(model: ForecastModel, future_dates: pd.DatetimeIndex) -> pd.DataFrame:

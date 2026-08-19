@@ -95,6 +95,9 @@ Bahut saare decision trees banata hai aur unka average/vote leta hai. Robust aur
 **Isolation Forest**
 Anomaly detection ka model — jo data point jaldi "isolate" ho jata hai (kam splits me alag), usse anomaly maana jata hai.
 
+**Contamination**
+Isolation Forest ka parameter — expected % anomalies dataset me (jaise 0.03 = 3%). Ye seedha precision ko control karta hai: jitna kam contamination, utne kam flags.
+
 **Autoencoder**
 Neural network jo data ko compress karke phir wapas reconstruct karta hai — agar reconstruction galat/off hai, toh wo data anomaly ho sakta hai.
 
@@ -109,6 +112,15 @@ Ek type ka neural network jo sequences/time-series ka pattern yaad rakh ke agla 
 
 **Prophet**
 Facebook ka banaya forecasting tool — trend aur seasonality automatically pakad leta hai, kam tuning me achha result deta hai.
+
+**LightGBM**
+XGBoost jaisa hi gradient boosting model, but faster aur kam memory leta hai bade data pe. StartupShield me churn ka best model yahi hai.
+
+**HistGradientBoosting**
+Scikit-learn ka apna gradient boosting model (LightGBM na ho toh fallback ke roop me use hota hai).
+
+**ETS / Holt-Winters (Exponential Smoothing)**
+Forecasting ka classical statistical model — trend aur seasonality ko "smoothing" se pakadta hai. Prophet na ho toh fallback.
 
 ---
 
@@ -147,6 +159,21 @@ Purane values ko feature ki tarah use karna — jaise "kal ka revenue" aaj ke pr
 
 **Rolling Average**
 Ek moving window (jaise last 7 din) ka average — noise kam karke trend clearly dikhata hai.
+
+**Chronological Split**
+Time-series data ko train/test me todne ka sahi tarika — hamesha time ke order me (last N din test ke liye), kabhi random shuffle nahi. Shuffle karne se "future" data "past" ko predict karne me leak ho jata hai.
+
+**Naive Baseline**
+Sabse simple forecast: "kal jo hua wahi aaj bhi hoga" (last value carry forward). Har real model ko isse behtar hona chahiye, warna wo useless hai.
+
+**Confidence Interval / Prediction Interval**
+Ek range jisme actual value ke aane ki ummeed hai (jaise "95% confident ki revenue 20k-28k ke beech hoga"). Sirf ek number dene se behtar hai kyunki uncertainty bhi dikhata hai.
+
+**Coverage**
+Prediction interval kitni baar sach me actual value ko capture karta hai. 95% interval claim kiya hai toh ~95% actuals andar aane chahiye — kam hua toh interval "over-confident" hai.
+
+**Additive vs Multiplicative Seasonality**
+Additive: seasonal swing hamesha same fixed amount hota hai. Multiplicative: swing revenue/level ke saath badhta hai (bada business, bada swing).
 
 ---
 
