@@ -6,6 +6,7 @@ raising, because a crash during a live demo is unrecoverable.
 
 import logging
 import warnings
+from pathlib import Path
 
 import pytest
 
@@ -14,15 +15,20 @@ from src import demo_data
 streamlit_testing = pytest.importorskip("streamlit.testing.v1")
 AppTest = streamlit_testing.AppTest
 
+# Streamlit >=1.6x resolves AppTest.from_file's relative paths against the calling
+# file's own directory, not the pytest rootdir -- a bare "app/app.py" here would
+# resolve to tests/app/app.py and raise FileNotFoundError. Anchoring to the repo
+# root keeps this working across streamlit versions.
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 PAGE_PATHS = [
-    "app/app.py",
-    "app/pages/0_Upload_Your_Company.py",
-    "app/pages/1_Churn.py",
-    "app/pages/2_Sentiment.py",
-    "app/pages/3_Anomalies.py",
-    "app/pages/4_Forecast.py",
-    "app/pages/5_Risk_and_Recommendations.py",
+    str(REPO_ROOT / "app" / "app.py"),
+    str(REPO_ROOT / "app" / "pages" / "0_Upload_Your_Company.py"),
+    str(REPO_ROOT / "app" / "pages" / "1_Churn.py"),
+    str(REPO_ROOT / "app" / "pages" / "2_Sentiment.py"),
+    str(REPO_ROOT / "app" / "pages" / "3_Anomalies.py"),
+    str(REPO_ROOT / "app" / "pages" / "4_Forecast.py"),
+    str(REPO_ROOT / "app" / "pages" / "5_Risk_and_Recommendations.py"),
 ]
 
 
@@ -51,7 +57,7 @@ def test_page_renders_without_exception(page_path: str, company_name: str) -> No
 def test_overview_shows_a_risk_score_for_each_company() -> None:
     """The headline number is the whole product -- it must always be present."""
     for company_name in demo_data.company_names():
-        app = AppTest.from_file("app/app.py", default_timeout=180)
+        app = AppTest.from_file(str(REPO_ROOT / "app" / "app.py"), default_timeout=180)
         app.session_state["company_name"] = company_name
         app.run()
 

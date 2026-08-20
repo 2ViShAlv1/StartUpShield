@@ -13,8 +13,8 @@ import yaml
 
 
 CONFIG_PATH = Path("config/config.yaml")
-SAAS_CHURN_TRAIN_PATH = Path("train.csv")
-SAAS_CHURN_TEST_PATH = Path("test_.csv")
+SAAS_CHURN_TRAIN_PATH = Path("data/external/train.csv")
+SAAS_CHURN_TEST_PATH = Path("data/external/test_.csv")
 
 
 def load_config(path: Path = CONFIG_PATH) -> dict:

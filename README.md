@@ -21,12 +21,16 @@ alternatives that were evaluated and skipped. It is not needed to run the dashbo
 
 ## Reproducing the models
 
-`data/raw/*.csv` and `models/*.pkl` are gitignored, so a fresh clone builds them:
+`models/*.pkl` is gitignored; `data/raw/*.csv` ships committed as the reproducible
+seed, so a fresh clone only needs to train:
 
 ```bash
-python -m src.generate_synthetic_data     # writes data/raw/
 python -m src.train_all                   # trains + saves every model
 ```
+
+`python -m src.generate_synthetic_data` regenerates `data/raw/` from scratch and is
+only needed to force-refresh the data itself — running it is harmless (it's
+deterministic under the configured seed) but unnecessary for a normal setup.
 
 `src/train_all.py` regenerates the exact metrics published in `reports/`. Useful flags:
 
