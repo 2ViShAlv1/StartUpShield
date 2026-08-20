@@ -624,7 +624,7 @@ POST /risk-score                body: {company_id}              → {risk_score,
 
 ---
 
-## 18. Domain Glossary (Condensed — full version in `README_Terms_Glossary.md`)
+## 18. Domain Glossary (Condensed — full version in `TERMS_GLOSSARY.md`)
 
 | Term | Meaning |
 |---|---|
@@ -639,7 +639,7 @@ POST /risk-score                body: {company_id}              → {risk_score,
 | MAPE | Forecast error, percentage me |
 | Baseline Model | Sabse simple model, comparison ke liye pehle banaya jaata hai |
 
-*(Poore glossary ke liye `README_Terms_Glossary.md` refer karo — business terms, ML terms, NLP terms, time-series terms, XAI terms, evaluation metrics, aur MLOps terms sab detail me hain.)*
+*(Poore glossary ke liye `TERMS_GLOSSARY.md` refer karo — business terms, ML terms, NLP terms, time-series terms, XAI terms, evaluation metrics, aur MLOps terms sab detail me hain.)*
 
 ---
 

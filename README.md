@@ -172,3 +172,14 @@ These published numbers need context — all are documented in `DECISIONS.md`:
 ## Status
 
 Project progress is tracked in `PROGRESS.md`. Implementation decisions and fallback notes are tracked in `DECISIONS.md`.
+
+## Project docs
+
+| File | What's in it |
+| --- | --- |
+| `PROGRESS.md` | Phase-by-phase checklist of what's built |
+| `DECISIONS.md` | Implementation decisions, deviations, and why |
+| `DEPLOYMENT.md` | Local testing checklist + Streamlit Cloud deploy steps |
+| `docs/MASTER_BUILD_SPEC.md` | Original requirements spec this project was built against |
+| `docs/TERMS_GLOSSARY.md` | Hinglish glossary of churn/SaaS/ML terms used throughout |
+| `docs/PITCH_DECK_PROMPT.md` | Prompt used to generate `StartupShield_AI_Pitch_Deck.pptx` |
