@@ -144,7 +144,7 @@
 
 - [x] End-to-end demo script runs for all 3 demo companies
 - [x] README covers setup, training, dashboard, demo, and the risk formula
-- [x] Demo video script (`docs/DEMO_VIDEO_SCRIPT.md`)
+- [x] Demo narration guide (`docs/DEMO_NARRATION_GUIDE.md`)
 - [ ] Demo video / screenshots for the hackathon submission
 - [ ] Final polish pass
 

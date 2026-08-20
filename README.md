@@ -183,4 +183,4 @@ Project progress is tracked in `PROGRESS.md`. Implementation decisions and fallb
 | `docs/MASTER_BUILD_SPEC.md` | Original requirements spec this project was built against |
 | `docs/TERMS_GLOSSARY.md` | Hinglish glossary of churn/SaaS/ML terms used throughout |
 | `docs/PITCH_DECK_PROMPT.md` | Prompt used to generate `StartupShield_AI_Pitch_Deck.pptx` |
-| `docs/DEMO_VIDEO_SCRIPT.md` | Timed talking-points script for the submission demo video |
+| `docs/DEMO_NARRATION_GUIDE.md` | Full on-screen narration guide: project explained in depth, page-by-page script, numbers cheat sheet, judge Q&A, glossary |
