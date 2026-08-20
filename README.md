@@ -184,3 +184,4 @@ Project progress is tracked in `PROGRESS.md`. Implementation decisions and fallb
 | `docs/TERMS_GLOSSARY.md` | Hinglish glossary of churn/SaaS/ML terms used throughout |
 | `docs/PITCH_DECK_PROMPT.md` | Prompt used to generate `StartupShield_AI_Pitch_Deck.pptx` |
 | `docs/DEMO_NARRATION_GUIDE.md` | Full on-screen narration guide: project explained in depth, page-by-page script, numbers cheat sheet, judge Q&A, glossary |
+| `docs/DEMO_SCRIPT_READALOUD.md` | Just the words to say — one continuous script, read top to bottom while recording |
