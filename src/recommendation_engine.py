@@ -67,7 +67,6 @@ def generate_recommendations(assessment: dict, anomaly_data: Any = None) -> list
             }
         )
 
-    # --- Single-signal conditions. ---
     if churn_prob > HIGH_CHURN and not _has_priority(recommendations, "critical"):
         recommendations.append(
             {

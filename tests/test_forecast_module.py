@@ -68,7 +68,6 @@ def test_predict_returns_confidence_bounds_for_every_future_date() -> None:
     assert not forecast_df.isna().any().any()
     assert (forecast_df["lower_bound"] <= forecast_df["forecast"]).all()
     assert (forecast_df["forecast"] <= forecast_df["upper_bound"]).all()
-    # Forecast must start the day after training ends and stay daily.
     assert forecast_df["date"].iloc[0] == train_df["date"].max() + pd.Timedelta(days=1)
     assert (forecast_df["date"].diff().dropna() == pd.Timedelta(days=1)).all()
 

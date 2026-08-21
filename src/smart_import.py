@@ -256,13 +256,11 @@ def _best_match(
     """Find the best unclaimed column for one canonical field."""
     normalized_field = normalize(field)
 
-    # 1. The column is literally named the canonical field.
     if normalized_field in normalized_columns:
         candidate = normalized_columns[normalized_field]
         if candidate not in claimed:
             return candidate, CONFIDENCE_EXACT
 
-    # 2. The column exactly equals a known alias.
     for alias in aliases:
         if alias in normalized_columns:
             candidate = normalized_columns[alias]

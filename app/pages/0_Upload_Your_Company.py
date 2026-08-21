@@ -94,7 +94,6 @@ with upload_columns[2]:
     timeseries_file = st.file_uploader("Time-series CSV", type="csv", key="timeseries_upload", label_visibility="collapsed")
 
 
-# --- Smart column mapping -------------------------------------------------------
 # Real exports (Stripe, HubSpot, Zendesk) never use our column names, and none of
 # them export `tenure` at all. Rather than making the user rename columns in Excel
 # first, detect what their columns mean and let them confirm or correct the guess.

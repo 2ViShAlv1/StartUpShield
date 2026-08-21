@@ -26,7 +26,6 @@ DEMO_COMPANIES = {
     "GreenLeaf SaaS": {
         "profile": "Healthy",
         "timeseries_file": "timeseries_greenleaf_saas.csv",
-        # Engaged customers: high usage, few tickets.
         "customer_filter": "healthy",
         # Review mix: (negative, neutral, positive) proportions.
         "review_mix": (0.10, 0.20, 0.70),
@@ -44,7 +43,6 @@ DEMO_COMPANIES = {
     "RedFlag Analytics": {
         "profile": "At Risk",
         "timeseries_file": "timeseries_redflag_analytics.csv",
-        # Disengaged customers: low usage, more support friction.
         "customer_filter": "at_risk",
         "review_mix": (0.65, 0.20, 0.15),
         "n_customers": 190,

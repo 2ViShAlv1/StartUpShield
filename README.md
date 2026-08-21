@@ -1,17 +1,33 @@
 # StartupShield AI
 
+### Most churn tools give you a number. This one gives you a reason — and a next move.
+
 **A risk-monitoring dashboard that turns customer, review, and revenue data into a single 0–100 company risk score — with explanations, not just a number.**
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Streamlit](https://img.shields.io/badge/dashboard-streamlit-ff4b4b)
 ![Status](https://img.shields.io/badge/status-work%20in%20progress-yellow)
 ![Tests](https://img.shields.io/badge/tests-pytest-0a9edc)
+![License](https://img.shields.io/badge/license-all%20rights%20reserved-lightgrey)
 
-StartupShield AI combines **churn prediction, sentiment analysis, anomaly detection, and forecasting** into one interpretable risk score for startups and SaaS companies, plus a rule-based recommendation engine that says what to actually do about it. Upload your own customer/review/revenue exports and it scores a company the models have never seen — no retraining, no manual column renaming.
+Founders and CS teams usually find out a customer is about to churn from the cancellation email. StartupShield AI combines **churn prediction, sentiment analysis, anomaly detection, and forecasting** into one interpretable risk score for startups and SaaS companies, plus a rule-based recommendation engine that says what to actually do about it — before the email arrives. Upload your own customer/review/revenue exports and it scores a company the models have never seen — no retraining, no manual column renaming.
+
+Every score comes with a plain-language reason and every reported metric comes with an honest caveat — see [Reading the reports honestly](#reading-the-reports-honestly). Nothing here is a black box you have to trust blindly.
 
 > **Status: work in progress.** Core pipeline, all four ML modules, and the full 7-page dashboard are built and tested (see [Status & Roadmap](#status--roadmap)). Demo video/screenshots and a final polish pass are still open.
 
 ![Forecast module output](reports/figures/forecast_greenleaf_saas.png)
+
+### At a glance
+
+| Signal | Result | Caveat |
+| --- | --- | --- |
+| Churn (LightGBM) | ROC-AUC **0.85** on 2,500 customers | 3 of 5 features are proxies — see below |
+| Anomaly detection | **5 / 5** injected anomalies recovered | Precision is a mechanical artifact of the contamination setting, not a quality score |
+| Forecast vs. naive baseline | Beats "repeat last week" on **3 / 3** demo companies | Most of the gain is seasonality, not the model |
+| Sentiment (TF-IDF + LogReg) | macro-F1 **1.00** on 3,000 reviews | Template-generated text — not proof of real-world generalization |
+
+Full numbers and honest context for each of these live in [`reports/`](reports/) and [Reading the reports honestly](#reading-the-reports-honestly).
 
 ## Table of contents
 
@@ -32,12 +48,23 @@ StartupShield AI combines **churn prediction, sentiment analysis, anomaly detect
 
 ## Features
 
+**Predict**
+
 - **Churn prediction** — LightGBM classifier (compared against Logistic Regression, Random Forest, XGBoost) with SHAP-based per-customer explanations.
 - **Sentiment analysis** — TF-IDF + Logistic Regression over customer reviews, flagging negative feedback.
 - **Anomaly detection** — IsolationForest over daily business metrics, validated against injected anomalies.
 - **Forecasting** — Prophet (with Holt-Winters and seasonal-naive fallbacks) for a 30-day forward projection with confidence bands, backtested against a naive baseline.
+
+**Explain**
+
 - **Explainable risk aggregation** — a single 0–100 score from a transparent weighted formula, not a black-box meta-model, with a plain-language "why it scored this way" string per company.
+
+**Act**
+
 - **Rule-based recommendation engine** — turns each risk signal into a prioritized, specific action.
+
+**Use**
+
 - **7-page Streamlit dashboard** with a persistent company selector, including live scoring for uploaded data.
 - **Smart CSV import** — auto-detects columns from real exports (Stripe, Zendesk, etc.), derives `tenure` from any signup-date column, aggregates per-ticket data to per-customer, and degrades gracefully when a field or enough history isn't available.
 
@@ -215,4 +242,4 @@ No license has been chosen yet — until one is added, default copyright applies
 
 ---
 
-Built by [@2ViShAlv1](https://github.com/2ViShAlv1).
+Built by [@2ViShAlv1](https://github.com/2ViShAlv1) — issues and feedback welcome.
