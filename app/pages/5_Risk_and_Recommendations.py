@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from shared import (
     company_selector,
     empty_state,
+    explanation_method_label,
     get_company_bundle,
     get_config,
     page_setup,
@@ -90,15 +91,19 @@ st.dataframe(
 st.caption(f"Total: **{assessment['risk_score']:.1f} / 100**")
 
 st.divider()
-st.subheader("Top churn drivers (SHAP)")
-
 top_factors = assessment.get("top_factors", [])
+method_name, method_caption = explanation_method_label(assessment)
+st.subheader("Top churn drivers" + (f" ({method_name})" if method_name else ""))
+
 if not top_factors:
-    st.caption("Explainability unavailable for this model.")
+    st.caption(
+        "Factor breakdown unavailable — the churn model could not be interrogated "
+        "for this company. The score breakdown above is unaffected."
+    )
 else:
     factor_frame = pd.DataFrame(
         {
-            "SHAP impact": {
+            "impact": {
                 name.split("__", 1)[-1].replace("_", " "): value
                 for name, value in top_factors
             }
@@ -106,7 +111,7 @@ else:
     )
     st.bar_chart(factor_frame, horizontal=True, height=240)
     st.caption(
-        "Positive values push churn risk up; negative values pull it down. "
+        f"{method_caption} "
         "`monthly spend` and `plan type` are derived from usage minutes, so read "
         "them as usage proxies rather than pricing effects."
     )

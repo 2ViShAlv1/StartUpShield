@@ -102,8 +102,10 @@ def get_shap_explanation(churn_model: Any, X_row: pd.DataFrame) -> dict:
 
     Returns:
         {'top_factors': [(feature_name, shap_value), ...], 'base_value': float,
-        'prediction': float}. If SHAP or the tree explainer is unavailable, falls
-        back to the model's native feature importances and flags the source.
+        'prediction': float, 'source': str}. If SHAP or the tree explainer is
+        unavailable, falls back to the model's native importances (see
+        `_importance_fallback`) and flags which method produced the numbers, so the
+        dashboard can label the chart honestly rather than always crediting SHAP.
     """
     prediction = float(churn_model.predict_proba(X_row)[:, 1].mean())
 
@@ -239,6 +241,7 @@ def assess_company(
             churn_prob, sentiment_positivity, anomaly_flag_ratio, forecast_deviation, weights
         ),
         "top_factors": shap_result.get("top_factors", []),
+        "explanation_source": shap_result.get("source", "none"),
         "explanation_text": explanation_text,
     }
 
@@ -467,23 +470,94 @@ def _importance_fallback(
     prediction: float,
     source: str,
 ) -> dict:
-    """Use native feature importances when SHAP is unavailable."""
+    """Explain the prediction without SHAP, in three descending tiers.
+
+    Classifier families expose their importance signal in different places, and the
+    dashboard must not go blank just because the deployed environment happened to
+    train a different one:
+
+      1. `feature_importances_` -- tree ensembles (RandomForest, XGBoost, LightGBM).
+      2. `coef_` -- linear models, e.g. the logistic-regression baseline.
+      3. Permutation sensitivity -- anything else. `HistGradientBoostingClassifier`,
+         which is exactly what `train()` falls back to when LightGBM is not
+         installed, exposes NEITHER attribute, so tiers 1-2 alone left a default
+         deploy with an empty explanation.
+
+    Returns `source` suffixed with the tier actually used, so callers can label the
+    chart honestly instead of claiming SHAP produced it.
+    """
+    top_factors: list[tuple[str, float]] = []
+    method = "none"
+
     try:
         classifier = churn_model.named_steps["classifier"]
         preprocessor = churn_model.named_steps["preprocessor"]
-        importances = np.asarray(classifier.feature_importances_, dtype=float)
         names = _transformed_feature_names(preprocessor, X_row)
-        ranked = sorted(zip(names, importances), key=lambda pair: pair[1], reverse=True)
-        top_factors = [(name, float(value)) for name, value in ranked[:TOP_FACTOR_COUNT]]
+
+        if hasattr(classifier, "feature_importances_"):
+            importances = np.asarray(classifier.feature_importances_, dtype=float)
+            method = "feature_importances"
+        elif hasattr(classifier, "coef_"):
+            importances = np.abs(np.asarray(classifier.coef_, dtype=float)).reshape(-1)
+            method = "coefficients"
+        else:
+            importances = _permutation_sensitivity(classifier, preprocessor.transform(X_row))
+            method = "permutation" if importances is not None else "none"
+
+        if importances is not None and len(importances) == len(names):
+            ranked = sorted(zip(names, importances), key=lambda pair: abs(pair[1]), reverse=True)
+            top_factors = [(name, float(value)) for name, value in ranked[:TOP_FACTOR_COUNT]]
+        else:
+            method = "none"
     except Exception:
         top_factors = []
+        method = "none"
 
     return {
         "top_factors": top_factors,
         "base_value": 0.0,
         "prediction": prediction,
-        "source": source,
+        "source": f"{source}:{method}",
     }
+
+
+def _permutation_sensitivity(
+    classifier: Any,
+    transformed: Any,
+    max_rows: int = 400,
+    seed: int = 42,
+) -> np.ndarray | None:
+    """Rank features by how much shuffling each one moves the predicted probability.
+
+    Model-agnostic and needs no ground-truth labels, which matters because this runs
+    at inference time where no `y` exists -- ruling out sklearn's
+    `permutation_importance`. Shuffling a column that the model leans on swings its
+    output; shuffling one it ignores does not.
+    """
+    try:
+        matrix = np.asarray(
+            transformed.toarray() if hasattr(transformed, "toarray") else transformed,
+            dtype=float,
+        )
+        if matrix.ndim != 2 or matrix.shape[0] < 2:
+            return None
+
+        rng = np.random.default_rng(seed)
+        if len(matrix) > max_rows:
+            matrix = matrix[rng.choice(len(matrix), max_rows, replace=False)]
+
+        baseline = classifier.predict_proba(matrix)[:, 1]
+
+        scores = np.empty(matrix.shape[1], dtype=float)
+        for index in range(matrix.shape[1]):
+            shuffled = matrix.copy()
+            shuffled[:, index] = rng.permutation(shuffled[:, index])
+            scores[index] = float(
+                np.mean(np.abs(classifier.predict_proba(shuffled)[:, 1] - baseline))
+            )
+        return scores
+    except Exception:
+        return None
 
 
 def _humanize_feature(raw_name: str) -> str:

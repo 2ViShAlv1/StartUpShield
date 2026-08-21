@@ -168,3 +168,103 @@ def test_generate_explanation_text_mentions_every_signal() -> None:
     assert "negative" in text
     assert "2 anomalous days" in text
     assert "12% below forecast" in text
+
+
+def _fit_churn_pipeline(model_type: str, block: tuple[str, ...] = ()):
+    """Fit a real churn pipeline, optionally hiding optional dependencies.
+
+    Blocking imports is how a constrained deploy actually behaves: `train()` silently
+    substitutes a different estimator family, which is what made explainability
+    disappear in the first place.
+    """
+    import builtins
+
+    from src import churn_module
+
+    rng = np.random.default_rng(0)
+    size = 250
+    frame = pd.DataFrame(
+        {
+            "tenure": rng.integers(1, 40, size),
+            "monthly_spend": rng.uniform(10, 200, size),
+            "usage_frequency": rng.integers(0, 30, size),
+            "support_tickets": rng.integers(0, 10, size),
+            "plan_type": rng.choice(["freemium", "team", "enterprise"], size),
+        }
+    )
+    labels = (frame["support_tickets"] > 5).astype(int)
+    features = churn_module.engineer_features(frame)
+
+    real_import = builtins.__import__
+
+    def guarded(name, *args, **kwargs):
+        if block and name.startswith(block):
+            raise ImportError(f"{name} blocked for test")
+        return real_import(name, *args, **kwargs)
+
+    builtins.__import__ = guarded
+    try:
+        return churn_module.train(features, labels, model_type=model_type), features
+    finally:
+        builtins.__import__ = real_import
+
+
+@pytest.mark.parametrize(
+    "model_type, block, expected_method",
+    [
+        # Linear model: exposes coef_, never feature_importances_.
+        ("logistic_regression", ("shap",), "coefficients"),
+        # Tree ensemble: exposes feature_importances_.
+        ("random_forest", ("shap",), "feature_importances"),
+        # No LightGBM -> HistGradientBoosting, which exposes NEITHER attribute.
+        ("lightgbm", ("shap", "lightgbm"), "permutation"),
+    ],
+)
+def test_explanation_survives_every_estimator_without_shap(
+    model_type: str, block: tuple[str, ...], expected_method: str
+) -> None:
+    """Without SHAP the dashboard must still explain the score, whatever was trained.
+
+    A deploy that lacks SHAP (a heavy compiled dependency) previously rendered
+    "Explainability unavailable for this model" instead of a factor chart.
+    """
+    import builtins
+
+    from src.risk_aggregator import get_shap_explanation
+
+    model, features = _fit_churn_pipeline(model_type, block=block)
+
+    real_import = builtins.__import__
+
+    def guarded(name, *args, **kwargs):
+        if name.startswith(block):
+            raise ImportError(f"{name} blocked for test")
+        return real_import(name, *args, **kwargs)
+
+    builtins.__import__ = guarded
+    try:
+        result = get_shap_explanation(model, features)
+    finally:
+        builtins.__import__ = real_import
+
+    assert result["top_factors"], f"{model_type} produced no explainable factors"
+    assert result["source"].endswith(expected_method)
+
+
+def test_assess_company_reports_which_explainer_produced_the_factors() -> None:
+    """The UI labels the chart from this field, so it must always be present."""
+    model, features = _fit_churn_pipeline("random_forest")
+    churn_data = features.copy()
+    churn_data["churn_prob"] = 0.4
+
+    result = assess_company(
+        "DemoCo",
+        churn_data,
+        _sentiment_frame([0.8, 0.2], ["positive", "negative"]),
+        _anomaly_frame([False, True]),
+        pd.DataFrame({"forecast": [100.0], "actual": [95.0]}),
+        churn_model=model,
+    )
+
+    assert result["top_factors"]
+    assert result["explanation_source"] != "none"

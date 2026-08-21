@@ -134,6 +134,46 @@ def risk_badge(assessment: dict) -> None:
     )
 
 
+def explanation_method_label(assessment: dict) -> tuple[str, str]:
+    """Describe how the churn factor chart was actually computed.
+
+    SHAP is the preferred explainer but not the guaranteed one -- when it is missing
+    or the estimator is unsupported, `risk_aggregator` falls back to native
+    importances or permutation sensitivity. Returning the real method keeps the
+    heading and caption from crediting SHAP for numbers it did not produce.
+
+    Returns:
+        (heading_suffix, caption) for the top-factors chart.
+    """
+    source = str(assessment.get("explanation_source", "none"))
+    method = source.split(":")[-1]
+
+    if source == "shap":
+        return (
+            "SHAP",
+            "SHAP values — positive pushes risk up, negative pulls it down.",
+        )
+    if method == "feature_importances":
+        return (
+            "model feature importances",
+            "SHAP was unavailable, so these are the model's own feature importances: "
+            "magnitude only, so they rank drivers without showing direction.",
+        )
+    if method == "coefficients":
+        return (
+            "model coefficients",
+            "SHAP was unavailable, so these are the absolute model coefficients: "
+            "magnitude only, so they rank drivers without showing direction.",
+        )
+    if method == "permutation":
+        return (
+            "permutation sensitivity",
+            "SHAP was unavailable, so each bar is how much the predicted churn "
+            "probability moves when that feature is shuffled — magnitude only.",
+        )
+    return ("", "")
+
+
 def empty_state(message: str) -> None:
     """Consistent placeholder when a company has no data for a page."""
     st.info(f"No data available — {message}")

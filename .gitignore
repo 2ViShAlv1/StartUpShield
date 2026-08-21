@@ -16,6 +16,8 @@ reports/train_summary.json
 .env
 .streamlit/secrets.toml
 *.log
+# Rendered from the tracked docs/*.md sources, so it would go stale on every edit.
+docs/*.pdf
 .pytest_cache/
 .ipynb_checkpoints/
 *.mkv

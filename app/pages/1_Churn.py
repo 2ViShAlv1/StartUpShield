@@ -12,7 +12,13 @@ from pathlib import Path
 # so put it on sys.path before importing the shared helpers.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from shared import company_selector, empty_state, get_company_bundle, page_setup
+from shared import (
+    company_selector,
+    empty_state,
+    explanation_method_label,
+    get_company_bundle,
+    page_setup,
+)
 
 page_setup("Churn")
 company_name = company_selector()
@@ -53,8 +59,10 @@ with left_column:
     st.bar_chart(histogram, height=280)
 
 with right_column:
-    st.subheader("Top risk factors")
     top_factors = bundle["assessment"].get("top_factors", [])
+    method_name, method_caption = explanation_method_label(bundle["assessment"])
+    st.subheader("Top risk factors" + (f" ({method_name})" if method_name else ""))
+
     if top_factors:
         factor_frame = pd.DataFrame(
             {
@@ -66,12 +74,15 @@ with right_column:
         )
         st.bar_chart(factor_frame, horizontal=True, height=280)
         st.caption(
-            "SHAP values — positive pushes risk up, negative pulls it down. "
+            f"{method_caption} "
             "Note: `monthly spend` and `plan type` are usage-minute proxies, "
             "not independent pricing signals (see README)."
         )
     else:
-        st.caption("Explainability unavailable for this model.")
+        st.caption(
+            "Factor breakdown unavailable — the churn model could not be "
+            "interrogated for this company. The risk score above is unaffected."
+        )
 
 st.divider()
 st.subheader("Highest-risk customers")
