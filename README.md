@@ -6,7 +6,7 @@
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Streamlit](https://img.shields.io/badge/dashboard-streamlit-ff4b4b)
-![Status](https://img.shields.io/badge/status-work%20in%20progress-yellow)
+![Status](https://img.shields.io/badge/status-live-brightgreen)
 ![Tests](https://img.shields.io/badge/tests-pytest-0a9edc)
 ![License](https://img.shields.io/badge/license-all%20rights%20reserved-lightgrey)
 
@@ -14,7 +14,9 @@ Founders and CS teams usually find out a customer is about to churn from the can
 
 Every score comes with a plain-language reason and every reported metric comes with an honest caveat — see [Reading the reports honestly](#reading-the-reports-honestly). Nothing here is a black box you have to trust blindly.
 
-> **Status: work in progress.** Core pipeline, all four ML modules, and the full 7-page dashboard are built and tested (see [Status & Roadmap](#status--roadmap)). Demo video is recorded ([`docs/StartupShield_AI_Demo.mkv`](docs/StartupShield_AI_Demo.mkv)); a final polish pass and a live deployment link are still open.
+**Live demo: [startupshield.streamlit.app](https://startupshield.streamlit.app/)** — Streamlit's viewer sign-in screen appears first (its standard gate for every hosted app, not a restriction on this one); continue as a guest to reach the dashboard.
+
+> **Status: live.** Core pipeline, all four ML modules, and the full 7-page dashboard are built, tested, and deployed (see [Status & Roadmap](#status--roadmap)).
 
 ![Forecast module output](reports/figures/forecast_greenleaf_saas.png)
 
@@ -204,6 +206,8 @@ One test file per module, plus dashboard smoke tests covering all 7 pages × 3 d
 
 ## Deploying
 
+**Live at [startupshield.streamlit.app](https://startupshield.streamlit.app/).**
+
 See **[DEPLOYMENT.md](DEPLOYMENT.md)** for local testing steps, a manual test checklist, and Streamlit Community Cloud deployment.
 
 Models are gitignored and trained on first load in the deployment environment (~4s, cached per container) rather than committed as pickles, which are fragile across library versions. The raw CSVs in `data/raw/` are committed as the reproducible seed.
@@ -222,7 +226,7 @@ These published numbers need context — all documented in full in [`DECISIONS.m
 Full phase-by-phase checklist is tracked in [`PROGRESS.md`](PROGRESS.md); implementation decisions and fallback notes in [`DECISIONS.md`](DECISIONS.md). Summary:
 
 - ✅ **Done** — data pipeline, all 4 ML modules (churn, sentiment, anomaly, forecast), risk aggregation with SHAP, recommendation engine, full 7-page dashboard, smart CSV upload/scoring flow, test suite.
-- 🚧 **In progress** — final polish pass, live deployment link.
+- 🚧 **In progress** — final polish pass.
 - 🔭 **Optional / not started** — FastAPI service, Dockerfile, CI pipeline.
 
 ## Project docs
