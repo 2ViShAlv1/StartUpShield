@@ -20,4 +20,3 @@ reports/train_summary.json
 docs/*.pdf
 .pytest_cache/
 .ipynb_checkpoints/
-*.mkv

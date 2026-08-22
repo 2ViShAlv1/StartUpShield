@@ -145,7 +145,7 @@
 - [x] End-to-end demo script runs for all 3 demo companies
 - [x] README covers setup, training, dashboard, demo, and the risk formula
 - [x] Demo narration guide (`docs/DEMO_NARRATION_GUIDE.md`)
-- [ ] Demo video / screenshots for the hackathon submission
+- [x] Demo video / screenshots for the hackathon submission (`docs/StartupShield_AI_Demo.mkv`)
 - [ ] Final polish pass
 
 ## Phase 11 — Post-MVP (optional)

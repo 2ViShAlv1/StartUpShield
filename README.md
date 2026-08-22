@@ -14,7 +14,7 @@ Founders and CS teams usually find out a customer is about to churn from the can
 
 Every score comes with a plain-language reason and every reported metric comes with an honest caveat — see [Reading the reports honestly](#reading-the-reports-honestly). Nothing here is a black box you have to trust blindly.
 
-> **Status: work in progress.** Core pipeline, all four ML modules, and the full 7-page dashboard are built and tested (see [Status & Roadmap](#status--roadmap)). Demo video/screenshots and a final polish pass are still open.
+> **Status: work in progress.** Core pipeline, all four ML modules, and the full 7-page dashboard are built and tested (see [Status & Roadmap](#status--roadmap)). Demo video is recorded ([`docs/StartupShield_AI_Demo.mkv`](docs/StartupShield_AI_Demo.mkv)); a final polish pass and a live deployment link are still open.
 
 ![Forecast module output](reports/figures/forecast_greenleaf_saas.png)
 
@@ -192,6 +192,8 @@ python run_full_pipeline_demo.py
 
 Scores all three demo companies, prints a full report for each, and writes summary JSON to `reports/demo/`.
 
+A recorded walkthrough is at [`docs/StartupShield_AI_Demo.mkv`](docs/StartupShield_AI_Demo.mkv).
+
 ## Tests
 
 ```bash
@@ -220,7 +222,7 @@ These published numbers need context — all documented in full in [`DECISIONS.m
 Full phase-by-phase checklist is tracked in [`PROGRESS.md`](PROGRESS.md); implementation decisions and fallback notes in [`DECISIONS.md`](DECISIONS.md). Summary:
 
 - ✅ **Done** — data pipeline, all 4 ML modules (churn, sentiment, anomaly, forecast), risk aggregation with SHAP, recommendation engine, full 7-page dashboard, smart CSV upload/scoring flow, test suite.
-- 🚧 **In progress** — demo video/screenshots, final polish pass.
+- 🚧 **In progress** — final polish pass, live deployment link.
 - 🔭 **Optional / not started** — FastAPI service, Dockerfile, CI pipeline.
 
 ## Project docs
